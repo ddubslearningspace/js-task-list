@@ -46,23 +46,15 @@ function getTasks() {
 		// Create li element
 		const li = document.createElement('li');
 
-		// Add a class
+		// Add a class and id
 		li.className = 'collection-item';
+		li.id = task.id;
 
-		// Create text node and append to li
-		li.appendChild(document.createTextNode(task));
-
-		// Create new link elemt
-		const link = document.createElement('a');
-
-		// Add a class
-		link.className = 'delete-item secondary-content';
-
-		// Add icon html
-		link.innerHTML = '<i class="fa fa-times"></i>';
-
-		// Append link to li
-		li.appendChild(link);
+		// Create checkbox and txt item
+		li.innerHTML = `
+			<label><input type="checkbox" /><span>${task.taskName}</span></label>
+			<a class="delete-item secondary-content"><i class="fa fa-times"></i></a>
+		`;
 
 		// Append li to ul
 		taskList.appendChild(li);
@@ -71,36 +63,40 @@ function getTasks() {
 
 // Add task
 function addTask(e) {
+	// Check if form is empty
 	if (taskInput.value === '') {
 		alert('Add a task');
+		return
+	}
+
+	// Generate task ID
+	const idNum = Math.floor(Date.now() * Math.random() * 100).toString(16);
+
+	// Create task object
+	const newTask = {
+		id: idNum,
+		taskName: taskInput.value,
+		completed : ""
 	}
 
 	// Create li element
 	const li = document.createElement('li');
 
-	// Add a class
+	// Add a class and ID
 	li.className = 'collection-item';
+	li.id = newTask.id;
 
-	// Create text node and append to li
-	li.appendChild(document.createTextNode(taskInput.value));
-
-	// Create new link elemt
-	const link = document.createElement('a');
-
-	// Add a class
-	link.className = 'delete-item secondary-content';
-
-	// Add icon html
-	link.innerHTML = '<i class="fa fa-times"></i>';
-
-	// Append link to li
-	li.appendChild(link);
+	// Create checkbox and txt item
+	li.innerHTML = `
+		<label><input type="checkbox" /><span>${newTask.taskName}</span></label>
+		<a class="delete-item secondary-content"><i class="fa fa-times"></i></a>
+	`;
 
 	// Append li to ul
 	taskList.appendChild(li);
 
 	// Store in local storage
-	storeTaskInLocalStorage(taskInput.value);
+	storeTaskInLocalStorage(newTask);
 
 	// Clear input
 	taskInput.value = '';
@@ -120,13 +116,11 @@ function storeTaskInLocalStorage(task) {
 // Remove task
 function removeTask(e) {
 	if (e.target.parentElement.classList.contains('delete-item')) {
-		if (confirm('Are you sure?')) {
 			// remove from DOM
 			e.target.parentElement.parentElement.remove();
 
 			// remove from localStorage
 			removeTaskFromLocalStorage(e.target.parentElement.parentElement);
-		}
 	}
 }
 
@@ -145,7 +139,7 @@ function removeTaskFromLocalStorage(taskItem) {
 
 // Clear tasks
 function clearTasks(e) {
-	if (confirm('Are you sure?')) {
+	if (confirm('Are you sure you want to clear all tasks?')) {
 		while (taskList.firstChild) {
 			taskList.removeChild(taskList.firstChild);
 		}
