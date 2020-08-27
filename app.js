@@ -15,8 +15,8 @@ function loadEventListeners() {
 	// Add task event
 	form.addEventListener('submit', addTask);
 
-	// Remove task event
-	taskList.addEventListener('click', removeTask);
+	// Complete/Remove task event
+	taskList.addEventListener('click', modifyTask);
 
 	// Clear tasks event
 	clearBtn.addEventListener('click', clearTasks);
@@ -52,7 +52,7 @@ function getTasks() {
 
 		// Create checkbox and txt item
 		li.innerHTML = `
-			<label><input type="checkbox" /><span>${task.taskName}</span></label>
+			<label><input type="checkbox" ${task.status} /><span>${task.taskName}</span></label>
 			<a class="delete-item secondary-content"><i class="fa fa-times"></i></a>
 		`;
 
@@ -76,7 +76,7 @@ function addTask(e) {
 	const newTask = {
 		id: idNum,
 		taskName: taskInput.value,
-		completed : ""
+		status: ""
 	}
 
 	// Create li element
@@ -113,15 +113,41 @@ function storeTaskInLocalStorage(task) {
 	localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
-// Remove task
-function removeTask(e) {
-	if (e.target.parentElement.classList.contains('delete-item')) {
-			// remove from DOM
-			e.target.parentElement.parentElement.remove();
+// Complete / Remove task
+function modifyTask(e) {
+	if (e.target.tagName === "SPAN") {
+		const checkbox = e.target.parentElement.querySelector('input');
+		const id = e.target.parentElement.parentElement.id;
 
-			// remove from localStorage
-			removeTaskFromLocalStorage(e.target.parentElement.parentElement);
+		let checked = '';
+
+		if (checkbox.checked === false) {
+			checked = 'checked="checked"'
+		}
+
+		updateTaskInLocalStorage(id, checked);
 	}
+
+	else if (e.target.parentElement.classList.contains('delete-item')) {
+		// remove from DOM
+		e.target.parentElement.parentElement.remove();
+
+		// remove from localStorage
+		removeTaskFromLocalStorage(e.target.parentElement.parentElement);
+	}
+}
+
+// Update task in local storage
+function updateTaskInLocalStorage(taskID, taskStatus) {
+	let tasks = initializeTasks();
+
+	tasks.forEach(function (task) {
+		if (taskID === task.id) {
+			task.status = taskStatus;
+		}
+	});
+
+	localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
 // Remove from localStorage
@@ -129,7 +155,7 @@ function removeTaskFromLocalStorage(taskItem) {
 	let tasks = initializeTasks();
 
 	tasks.forEach(function (task, index) {
-		if (taskItem.textContent === task) {
+		if (taskItem.id === task.id) {
 			tasks.splice(index, 1);
 		}
 	});
